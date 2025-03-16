@@ -1,0 +1,6 @@
+import { apiClient } from './client';
+
+export const Api = {
+  fetchTile: () => apiClient.get('/'),
+  fetchCoords: () => apiClient.get('/coords'),
+};
