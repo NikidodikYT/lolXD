@@ -1,0 +1,47 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+
+const Controls = ({ 
+  showModules,
+  showStations,
+  showCoverage,
+  onToggleModules,
+  onToggleStations,
+  onToggleCoverage,
+  stationsSummary 
+}) => (
+  <div style={{ margin: '20px 0', padding: '10px', background: '#f5f5f5' }}>
+    <div style={{ marginBottom: '10px' }}>
+      <button onClick={onToggleModules}>
+        {showModules ? 'Скрыть модули' : 'Показать модули'}
+      </button>
+      
+      <button onClick={onToggleStations}>
+        {showStations ? 'Скрыть станции' : 'Показать станции'}
+      </button>
+      
+      <button onClick={onToggleCoverage} disabled={!showStations}>
+        {showCoverage ? 'Скрыть зоны' : 'Показать зоны'}
+      </button>
+    </div>
+    
+    <div>
+      <h4>Стоимость:</h4>
+      <p>Купер: {stationsSummary.cuperCount} × {stationsSummary.cuperPrice} = {stationsSummary.cuperTotal}</p>
+      <p>Энгель: {stationsSummary.engelCount} × {stationsSummary.engelPrice} = {stationsSummary.engelTotal}</p>
+      <p>Общая стоимость: {stationsSummary.totalCost}</p>
+    </div>
+  </div>
+);
+
+Controls.propTypes = {
+  showModules: PropTypes.bool.isRequired,
+  showStations: PropTypes.bool.isRequired,
+  showCoverage: PropTypes.bool.isRequired,
+  onToggleModules: PropTypes.func.isRequired,
+  onToggleStations: PropTypes.func.isRequired,
+  onToggleCoverage: PropTypes.func.isRequired,
+  stationsSummary: PropTypes.object.isRequired,
+};
+
+export default Controls;
