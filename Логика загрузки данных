@@ -1,0 +1,86 @@
+import { useState, useEffect } from 'react';
+import { Api } from '../api/endpoints';
+
+const useMapData = () => {
+  const [state, setState] = useState({
+    tiles: [],
+    modules: [],
+    stations: [],
+    loading: true,
+    error: null,
+  });
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Загрузка координат
+        const coordsData = await Api.fetchCoords();
+        
+        // Загрузка тайлов
+        const tilePromises = Array(16).fill().map(() => Api.fetchTile());
+        const tiles = await Promise.all(tilePromises);
+        
+        // Сборка карты (реальная логика должна учитывать порядок тайлов)
+        const assembledMap = assembleTiles(tiles); 
+        
+        // Поиск станций
+        const peaks = findPeaks(assembledMap);
+        const stations = calculateStations(peaks, coordsData.price);
+
+        setState({
+          tiles: assembledMap,
+          modules: [coordsData.sender, coordsData.listener],
+          stations,
+          loading: false,
+          error: null,
+        });
+      } catch (error) {
+        setState(prev => ({ ...prev, loading: false, error: error.message }));
+      }
+    };
+
+    loadData();
+  }, []);
+
+  return state;
+};
+
+// Вспомогательные функции
+const assembleTiles = (tiles) => {
+  // Логика сборки карты (требует доработки на основе реальных данных)
+  return tiles.flatMap(t => t.message.data);
+};
+
+const findPeaks = (map) => {
+  // Алгоритм поиска локальных максимумов
+  const peaks = [];
+  for (let y = 1; y < map.length - 1; y++) {
+    for (let x = 1; x < map[y].length - 1; x++) {
+      if (isPeak(map, x, y)) {
+        peaks.push({ x, y, height: map[y][x] });
+      }
+    }
+  }
+  return peaks;
+};
+
+const isPeak = (map, x, y) => {
+  const val = map[y][x];
+  return [
+    map[y-1][x], map[y+1][x],
+    map[y][x-1], map[y][x+1],
+    map[y-1][x-1], map[y-1][x+1],
+    map[y+1][x-1], map[y+1][x+1]
+  ].every(neighbor => val > neighbor);
+};
+
+const calculateStations = (peaks, prices) => {
+  // Алгоритм оптимизации станций
+  return peaks.map(peak => ({
+    ...peak,
+    type: peak.height > 200 ? 'Энгель' : 'Купер',
+    cost: peak.height > 200 ? prices[1] : prices[0],
+  }));
+};
+
+export default useMapData;
