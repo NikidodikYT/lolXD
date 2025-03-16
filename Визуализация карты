@@ -1,0 +1,67 @@
+import React from 'react';
+import * as d3 from 'd3';
+import PropTypes from 'prop-types';
+
+const Map = ({ data, modules, stations, showModules, showStations, showCoverage }) => (
+  <svg 
+    width="512" 
+    height="512" 
+    viewBox="0 0 256 256"
+    style={{ border: '1px solid #ccc' }}
+  >
+    {/* Карта */}
+    {data.map((row, y) => 
+      row.map((height, x) => (
+        <rect
+          key={`${x}-${y}`}
+          x={x}
+          y={y}
+          width="1"
+          height="1"
+          fill={d3.interpolateViridis(height / 255)}
+        />
+      ))
+    )}
+
+    {/* Модули */}
+    {showModules && modules.map(([x, y], i) => (
+      <circle
+        key={`module-${i}`}
+        cx={x}
+        cy={y}
+        r="2"
+        fill="#ff0000"
+        stroke="#fff"
+      />
+    ))}
+
+    {/* Станции */}
+    {showStations && stations.map((station, i) => (
+      <g key={`station-${i}`} transform={`translate(${station.x},${station.y})`}>
+        <circle
+          r="2"
+          fill={station.type === 'Купер' ? '#00ff00' : '#0000ff'}
+        />
+        {showCoverage && (
+          <circle
+            r={station.type === 'Купер' ? 32 : 64}
+            fill="none"
+            stroke={station.type === 'Купер' ? '#00ff0080' : '#0000ff80'}
+            strokeWidth="0.5"
+          />
+        )}
+      </g>
+    ))}
+  </svg>
+);
+
+Map.propTypes = {
+  data: PropTypes.array.isRequired,
+  modules: PropTypes.array.isRequired,
+  stations: PropTypes.array.isRequired,
+  showModules: PropTypes.bool.isRequired,
+  showStations: PropTypes.bool.isRequired,
+  showCoverage: PropTypes.bool.isRequired,
+};
+
+export default Map;
