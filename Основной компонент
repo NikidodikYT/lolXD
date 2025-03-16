@@ -1,0 +1,64 @@
+import React, { useState } from 'react';
+import useMapData from './hooks/useMapData';
+import Map from './components/Map';
+import Controls from './components/Controls';
+import Loader from './components/Loader';
+
+const App = () => {
+  const { tiles, modules, stations, loading, error } = useMapData();
+  const [showModules, setShowModules] = useState(true);
+  const [showStations, setShowStations] = useState(true);
+  const [showCoverage, setShowCoverage] = useState(false);
+
+  if (loading) return <Loader />;
+  if (error) return <div className="error">Ошибка: {error}</div>;
+
+  const stationsSummary = stations.reduce((acc, station) => {
+    if (station.type === 'Купер') {
+      acc.cuperCount++;
+      acc.cuperTotal += station.cost;
+    } else {
+      acc.engelCount++;
+      acc.engelTotal += station.cost;
+    }
+    acc.totalCost += station.cost;
+    return acc;
+  }, {
+    cuperCount: 0,
+    cuperTotal: 0,
+    engelCount: 0,
+    engelTotal: 0,
+    totalCost: 0
+  });
+
+  return (
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <h1>Марсианская система связи</h1>
+      
+      <Controls
+        showModules={showModules}
+        showStations={showStations}
+        showCoverage={showCoverage}
+        onToggleModules={() => setShowModules(!showModules)}
+        onToggleStations={() => setShowStations(!showStations)}
+        onToggleCoverage={() => setShowCoverage(!showCoverage)}
+        stationsSummary={{
+          ...stationsSummary,
+          cuperPrice: stations.find(s => s.type === 'Купер')?.cost || 0,
+          engelPrice: stations.find(s => s.type === 'Энгель')?.cost || 0,
+        }}
+      />
+      
+      <Map
+        data={tiles}
+        modules={modules}
+        stations={stations}
+        showModules={showModules}
+        showStations={showStations}
+        showCoverage={showCoverage}
+      />
+    </div>
+  );
+};
+
+export default App;
